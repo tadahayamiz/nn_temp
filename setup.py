@@ -18,7 +18,7 @@ setup(
             "nn_temp.dev=230913-01:main",
         ]
     },
-    # classifiers=[
-    #     'Programming Language :: Python :: 3.9',
-    # ]
+    classifiers=[
+        'Programming Language :: Python :: 3.9',
+    ]
 )
