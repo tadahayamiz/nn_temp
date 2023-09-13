@@ -21,6 +21,9 @@ from .src import utils
 from .src import data_handler as dh
 from .src.models import MyNet
 
+print(3)
+
+
 # === 基本的にタスクごとに変更 ===
 # argumentの設定, 概ね同じセッティングの中で振りうる条件を設定
 parser = argparse.ArgumentParser(description='CLI template')
@@ -39,6 +42,10 @@ parser.add_argument('--lr', type=float, default=0.001) # learning rate
 args = parser.parse_args()
 utils.fix_seed(seed=args.seed, fix_gpu=False) # for seed control
 
+
+print(2)
+
+
 # setup
 now = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 DIR_NAME = args.workdir + '/results/' + now # for output
@@ -46,6 +53,10 @@ if not os.path.exists(DIR_NAME):
     os.makedirs(DIR_NAME)
 LOGGER = utils.init_logger(__name__, DIR_NAME, now, level_console='debug') # for logger
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu') # get device
+
+
+print(1)
+
 
 # === 基本的にタスクごとに変更 ===
 def prepare_data():
