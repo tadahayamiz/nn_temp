@@ -47,8 +47,6 @@ if not os.path.exists(DIR_NAME):
 LOGGER = utils.init_logger(__name__, DIR_NAME, now, level_console='debug') # for logger
 DEVICE = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu') # get device
 
-print(DEVICE)
-
 # === 基本的にタスクごとに変更 ===
 def prepare_data():
     """
