@@ -4,7 +4,6 @@
 @author: tadahaya
 """
 # packages installed in the current environment
-from symbol import parameters
 import os
 import datetime
 import argparse

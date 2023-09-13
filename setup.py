@@ -6,16 +6,15 @@ with open('requirements.txt') as requirements_file:
 # modify entry_points to use command line 
 # {COMMAND NAME}={module path}:{function in the module}
 setup(
-    name="cli_package",
+    name="nn_temp",
     version="0.0.1",
-    description="a template for CLI package",
+    description="a template for a NN package",
     author="tadahaya",
     packages=find_packages(),
     install_requires=install_requirements,
     entry_points={
         "console_scripts": [
-            "mycommand=mymodule.core:main",
-            "mycommand2=mymodule.core:main2",
+            "nn_temp.dev=nn_temp.note_230913_01:main",
         ]
     },
     classifiers=[
