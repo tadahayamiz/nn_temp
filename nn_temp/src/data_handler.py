@@ -6,8 +6,6 @@ prepare dataloader
 
 @author: tadahaya
 """
-import time
-from tqdm import tqdm
 import numpy as np
 from typing import Tuple
 
@@ -147,7 +145,7 @@ def prep_data(
 
     """
     train_dataset = prep_dataset(train_x, train_y, transform[0])
-    test_dataset = prep_dataset(train_x, train_y, transform[1])
+    test_dataset = prep_dataset(test_x, test_y, transform[1])
     train_loader = prep_dataloader(
         train_dataset, batch_size, shuffle[0], num_workers, pin_memory
         )
