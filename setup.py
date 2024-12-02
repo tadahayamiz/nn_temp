@@ -78,7 +78,7 @@ if len(note_files) > 1:
                 highest_version = version
                 latest_file = note_file
 if latest_file:
-    module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
+    module_name = os.path.basename(latest_file).split('.')[0]  # Extract the module name without '.py'
 else:
     raise FileNotFoundError("No valid 'note_' file found in the current directory.")
 
