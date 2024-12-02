@@ -2,63 +2,11 @@ import os
 import re
 from setuptools import setup, find_packages
 
-# Read the requirements from the requirements.txt file
+# 1. Read the requirements from the requirements.txt file
 with open('requirements.txt') as requirements_file:
     install_requirements = requirements_file.read().splitlines()
 
-
-# Find the package name dynamically
-package_name = None
-for subdir in os.listdir('.'):
-    # Check if the subdir is a package (contains __init__.py)
-    if os.path.isdir(subdir) and os.path.exists(os.path.join(subdir, '__init__.py')):
-        package_name = subdir
-        break
-if package_name is None:
-    raise FileNotFoundError("No valid package found in the current directory.")
-
-# Find all Python files starting with "note_" and ending with ".py"
-note_files = [f for f in os.listdir(f'./{package_name}') if f.startswith('note_') and f.endswith('.py')]
-
-# Parse the filenames and identify the latest file
-latest_file = None
-latest_date = -1
-highest_version = -1
-for note_file in note_files:
-    parsed = parse_note_file(note_file)
-    if parsed:
-        date, version = parsed
-        if date > latest_date or (date == latest_date and version > highest_version):
-            latest_date = date
-            highest_version = version
-            latest_file = note_file
-if latest_file:
-    module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
-else:
-    raise FileNotFoundError("No valid 'note_' file found in the current directory.")
-
-
-
-# modify entry_points to use command line 
-# {COMMAND NAME}={module path}:{function in the module}
-setup(
-    name=f"{package_name}",
-    version=f"{get_version()}",
-    description="a template for a NN package",
-    author=f"{get_author()}",
-    packages=find_packages(),
-    install_requires=install_requirements,
-    entry_points={
-        "console_scripts": [
-            f"{package_name}.main={package_name}.{module_name}:main",
-        ]
-    },
-    classifiers=[
-        'Programming Language :: Python :: 3.10', # need to check
-    ]
-)
-
-
+# 2. Prepare the package metadata
 # Helper functions
 # Function to parse the filename and extract date and version
 def parse_note_file(filename):
@@ -98,3 +46,55 @@ def get_author():
     if author is None:
         author = "Default Author"
     return author
+
+
+# Find the package name dynamically
+package_name = None
+for subdir in os.listdir('.'):
+    # Check if the subdir is a package (contains __init__.py)
+    if os.path.isdir(subdir) and os.path.exists(os.path.join(subdir, '__init__.py')):
+        package_name = subdir
+        break
+if package_name is None:
+    raise FileNotFoundError("No valid package found in the current directory.")
+
+# Find all Python files starting with "note_" and ending with ".py"
+note_files = [f for f in os.listdir(f'./{package_name}') if f.startswith('note_') and f.endswith('.py')]
+
+# Parse the filenames and identify the latest file
+latest_file = None
+latest_date = -1
+highest_version = -1
+for note_file in note_files:
+    parsed = parse_note_file(note_file)
+    if parsed:
+        date, version = parsed
+        if date > latest_date or (date == latest_date and version > highest_version):
+            latest_date = date
+            highest_version = version
+            latest_file = note_file
+if latest_file:
+    module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
+else:
+    raise FileNotFoundError("No valid 'note_' file found in the current directory.")
+
+
+# 3. Define the setup function
+# modify entry_points to use command line if needed
+# {COMMAND NAME}={module path}:{function in the module}
+setup(
+    name=f"{package_name}",
+    version=f"{get_version()}",
+    description="a template for a NN package",
+    author=f"{get_author()}",
+    packages=find_packages(),
+    install_requires=install_requirements,
+    entry_points={
+        "console_scripts": [
+            f"{package_name}.main={package_name}.{module_name}:main",
+        ]
+    },
+    classifiers=[
+        'Programming Language :: Python :: 3.10', # need to check
+    ]
+)
