@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 # Read the requirements from the requirements.txt file
 with open('requirements.txt') as requirements_file:
     install_requirements = requirements_file.read().splitlines()
-
+print("debug: OK requirements")
 
 # Find all Python files starting with "note_" and ending with ".py"
 note_files = [f for f in os.listdir('.') if f.startswith('note_') and f.endswith('.py')]
@@ -26,6 +26,7 @@ if latest_file:
     module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
 else:
     raise FileNotFoundError("No valid 'note_' file found in the current directory.")
+print("debug: OK note_files")
 
 # Find the package name dynamically
 package_name = None
@@ -34,15 +35,16 @@ for subdir in os.listdir('.'):
     if os.path.isdir(subdir) and os.path.exists(os.path.join(subdir, '__init__.py')):
         package_name = subdir
         break
+print("debug: OK package_name")
 
 
 # modify entry_points to use command line 
 # {COMMAND NAME}={module path}:{function in the module}
 setup(
     name=f"{package_name}",
-    version="0.0.1",
+    version=f"{get_version()}",
     description="a template for a NN package",
-    author="tadahaya",
+    author=f"{get_author()}",
     packages=find_packages(),
     install_requires=install_requirements,
     entry_points={
