@@ -59,20 +59,24 @@ if package_name is None:
     raise FileNotFoundError("No valid package found in the current directory.")
 
 # Find all Python files starting with "note_" and ending with ".py"
-note_files = [f for f in os.listdir(f'./{package_name}') if f.startswith('note_') and f.endswith('.py')]
+note_files = []
+for f in os.listdir(os.path.join(os.path.dirname(__file__), package_name)):
+    if f.startswith('note_') and f.endswith('.py'):
+        note_files.append(os.path.join(os.path.dirname(__file__), package_name, f))
 
 # Parse the filenames and identify the latest file
-latest_file = None
-latest_date = -1
-highest_version = -1
-for note_file in note_files:
-    parsed = parse_note_file(note_file)
-    if parsed:
-        date, version = parsed
-        if date > latest_date or (date == latest_date and version > highest_version):
-            latest_date = date
-            highest_version = version
-            latest_file = note_file
+latest_file = note_files[0] if note_files else None
+if len(note_files) > 1:
+    latest_date = -1
+    highest_version = -1
+    for note_file in note_files:
+        parsed = parse_note_file(note_file)
+        if parsed:
+            date, version = parsed
+            if date > latest_date or (date == latest_date and version > highest_version):
+                latest_date = date
+                highest_version = version
+                latest_file = note_file
 if latest_file:
     module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
 else:
