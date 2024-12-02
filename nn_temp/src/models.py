@@ -13,9 +13,16 @@ import torch.nn.functional as F
 import numpy as np
 
 class Block(nn.Module):
+    """
+    A residual block consisting of three convolutional layers with skip connections.
+
+    Args:
+        channel_in (int): Number of input channels.
+        channel_out (int): Number of output channels.
+    """
     def __init__(self, channel_in, channel_out):
         super().__init__()
-        channel = channel_out // 4
+        channel = channel_out // 4 # Bottleneck dimension
 
         # 1 x 1 convolution
         self.conv1 = nn.Conv2d(channel_in, channel, kernel_size=(1,1))
@@ -36,6 +43,15 @@ class Block(nn.Module):
         self.relu3 = nn.ReLU()
 
     def forward(self,x):
+        """
+        Forward pass through the residual block.
+        
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, channel_in, height, width).
+
+        Returns:
+            Tensor: Output tensor of shape (batch_size, channel_out, height, width).
+        """
         h = self.conv1(x)
         h = self.bn1(h)
         h = self.relu1(h)
@@ -49,18 +65,44 @@ class Block(nn.Module):
         return y
 
     def _shortcut(self, channel_in, channel_out):
+        """
+        Defines the shortcut connection. If the input and output channel counts differ,
+        applies a 1x1 convolution to match dimensions.
+
+        Args:
+            channel_in (int): Input channel count.
+            channel_out (int): Output channel count.
+
+        Returns:
+            Callable: Either identity mapping or projection.
+        """
         if channel_in != channel_out:
-            return self._projection(channel_in, channel_out)
-        else:
-            return lambda x: x
+            return nn.Conv2d(channel_in, channel_out, kernel_size=(1, 1), stride=1)
+        return nn.Identity()  # Direct pass-through if dimensions match
 
     def _projection(self, channel_in, channel_out):
+        """
+        Projects the input to the output channel dimensions using a 1x1 convolution.
+
+        Args:
+            channel_in (int): Input channel count.
+            channel_out (int): Output channel count.
+
+        Returns:
+            nn.Conv2d: Projection layer.
+        """
         return nn.Conv2d(channel_in, channel_out,
                          kernel_size=(1, 1),
                          padding=0)
 
 class MyNet(nn.Module):
-    def __init__(self,output_dim):
+    """
+    A ResNet-like neural network for classification tasks.
+
+    Args:
+        output_dim (int): Number of output dimensions for the final classification layer.
+    """
+    def __init__(self, output_dim):
         super().__init__()
         self.conv1 = nn.Conv2d(
             3, 64, kernel_size=(7,7), stride=(2,2), padding=3
@@ -96,41 +138,72 @@ class MyNet(nn.Module):
         )
 
         self.avg_pool = GlobalAvgPool2d()
-        self.fc = nn.Linear(2048, 1000)
-        self.out = nn.Linear(1000, output_dim)
+        self.fc = nn.Linear(2048, 512)
+        self.out = nn.Linear(512, output_dim)
 
     def forward(self,x):
-        h = self.conv1(x)
+        """
+        Forward pass through the network.
+        
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, 3, height, width).
+
+        Returns:
+            Tensor: Output tensor of shape (batch_size, output_dim).
+        """
+        h = self.conv1(x) # Shape: (batch_size, C, H, W)
         h = self.bn1(h)
         h = self.relu1(h)
         h = self.pool1(h)
         h = self.block0(h)
         for block in self.block1:
             h = block(h)
-        h = self.conv2(h)
+        h = self.conv2(h) # Shape: (batch_size, C, H, W)
         for block in self.block2:
             h = block(h)
-        h = self.conv3(h)
+        h = self.conv3(h) # Shape: (batch_size, C, H, W)
         for block in self.block3:
             h = block(h)
-        h = self.conv4(h)
+        h = self.conv4(h) # Shape: (batch_size, C, H, W)
         for block in self.block4:
             h = block(h)
-        h = self.avg_pool(h)
-        h = self.fc(h)
+        h = self.avg_pool(h) # Shape: (batch_size, C)
+        h = self.fc(h) # Shape: (batch_size, hidden_dim)
         h = torch.relu(h)
-        h = self.out(h)
+        h = self.out(h) # Shape: (batch_size, output_dim)
         return h
 
     def _building_block(self, channel_out, channel_in=None):
+        """
+        Helper function to create a residual block.
+
+        Args:
+            channel_out (int): Number of output channels.
+            channel_in (int, optional): Number of input channels. Defaults to channel_out.
+
+        Returns:
+            Block: A residual block instance.
+        """
         if channel_in is None:
             channel_in = channel_out
         return Block(channel_in,channel_out)
 
 
 class GlobalAvgPool2d(nn.Module):
+    """
+    Global average pooling layer.
+    """
     def __init__(self):
         super().__init__()
 
     def forward(self,x):
-        return F.avg_pool2d(x,kernel_size=x.size()[2:]).view(-1,x.size(1))
+        """
+        Applies global average pooling.
+
+        Args:
+            x (Tensor): Input tensor of shape (batch_size, channels, height, width).
+
+        Returns:
+            Tensor: Output tensor of shape (batch_size, channels).
+        """    
+        return F.avg_pool2d(x, kernel_size=x.size()[2:]).view(x.size(0), -1)
