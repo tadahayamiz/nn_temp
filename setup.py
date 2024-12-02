@@ -5,10 +5,20 @@ from setuptools import setup, find_packages
 # Read the requirements from the requirements.txt file
 with open('requirements.txt') as requirements_file:
     install_requirements = requirements_file.read().splitlines()
-print("debug: OK requirements")
+
+
+# Find the package name dynamically
+package_name = None
+for subdir in os.listdir('.'):
+    # Check if the subdir is a package (contains __init__.py)
+    if os.path.isdir(subdir) and os.path.exists(os.path.join(subdir, '__init__.py')):
+        package_name = subdir
+        break
+if package_name is None:
+    raise FileNotFoundError("No valid package found in the current directory.")
 
 # Find all Python files starting with "note_" and ending with ".py"
-note_files = [f for f in os.listdir('.') if f.startswith('note_') and f.endswith('.py')]
+note_files = [f for f in os.listdir(f'./{package_name}') if f.startswith('note_') and f.endswith('.py')]
 
 # Parse the filenames and identify the latest file
 latest_file = None
@@ -26,16 +36,7 @@ if latest_file:
     module_name = latest_file.split('.')[0]  # Extract the module name without '.py'
 else:
     raise FileNotFoundError("No valid 'note_' file found in the current directory.")
-print("debug: OK note_files")
 
-# Find the package name dynamically
-package_name = None
-for subdir in os.listdir('.'):
-    # Check if the subdir is a package (contains __init__.py)
-    if os.path.isdir(subdir) and os.path.exists(os.path.join(subdir, '__init__.py')):
-        package_name = subdir
-        break
-print("debug: OK package_name")
 
 
 # modify entry_points to use command line 
